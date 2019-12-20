@@ -63,8 +63,10 @@ void setup()
 
 	// define tasks frequency
 	_frequency_rate.start((unsigned long) millis());
-	_frequency_broadcaster.start((unsigned long) millis());
+	_frequency_odometry.start((unsigned long) millis());
 	_frequency_controller.start((unsigned long) millis());
+
+	nh.advertise(odom_publisher);
 
 	// DEBUG
 	nh.advertise(debug_publisher1);
@@ -165,9 +167,41 @@ void loop() {
 		digitalWrite(RT_PIN1, LOW);
 	}
 
-	// update broadcaster
-	if(_frequency_broadcaster.delay(millis())) {
-		// TODO: add odom frame publisher
+	// update odometry
+	if(_frequency_odometry.delay(millis())) {
+		float dt, dx, dy;
+		float qw, qx, qy, qz;
+
+		dt = (float)(millis() - odom_prev_time) * 0.001f;
+		odom_prev_time = millis();
+
+		// compute linear and angular estimated velocity
+		linear_velocity_est = WHEEL_RADIUS * (motor_right_rate_est + motor_left_rate_est) / 2;
+		angular_velocity_est = (2 * WHEEL_RADIUS / BASE_LENGTH)
+							 * (motor_right_rate_est - motor_left_rate_est);
+
+		// compute translation and rotation
+		yaw_est += angular_velocity_est * dt;
+		dx = cos(yaw_est) * linear_velocity_est * dt;
+		dy = sin(yaw_est) * linear_velocity_est * dt;
+
+		// feed odom frame
+		odom.header.stamp = nh.now();
+		odom.header.frame_id = "odom";
+		odom.child_frame_id = "base_link";
+		odom.pose.pose.position.x += dx;
+		odom.pose.pose.position.y += dy;
+		odom.pose.pose.position.z = 0.0;
+		odom.pose.pose.orientation.w = qw;
+		odom.pose.pose.orientation.x = qx;
+		odom.pose.pose.orientation.y = qy;
+		odom.pose.pose.orientation.z = qz;
+		// Velocity expressed in base_link frame
+		odom.twist.twist.linear.x = linear_velocity_est;
+		odom.twist.twist.linear.y = 0.0f;
+		odom.twist.twist.angular.z = angular_velocity_est;
+
+    	odom_publisher.publish(&odom);
 	}
 
 	// update subscribers values

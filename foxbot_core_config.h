@@ -12,7 +12,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- *  Description: Core script for foxbot robot.
+ *  Description: Core configuration file for foxbot robot.
  *  Author: Matthieu Magnon
  *
  *  Serial communication is enabled with the following command:
@@ -30,12 +30,14 @@
 #include <ros/time.h>
 #include <tf/tf.h>
 #include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
+
 #include <Timer.h>
 #include <MedianFilter.h>
 
 /* Global parameters */
 #define FREQUENCY_RATE 						30 			// [ms] default 50ms
-#define FREQUENCY_BROADCASTER 				250 		// [ms]
+#define FREQUENCY_ODOMETRY 				150 		// [ms] default 250ms
 #define FREQUENCY_ROSPINONCE 				150 		// [ms]
 #define FREQUENCY_CONTROLLER 				30 			// [ms] default 50ms
 
@@ -56,11 +58,12 @@
 
 /* Mechanical parameters */
 #define WHEEL_RADIUS 						0.04 		// [m]
+// distance between Robot Rotation Point and Wheel Point of Contact
 #define BASE_LENGTH							0.3 		// [m]
 
 /* Define frequency loops */
 Timer _frequency_rate(FREQUENCY_RATE);
-Timer _frequency_broadcaster(FREQUENCY_BROADCASTER);
+Timer _frequency_odometry(FREQUENCY_ODOMETRY);
 Timer _frequency_rospinonce(FREQUENCY_ROSPINONCE);
 Timer _frequency_controller(FREQUENCY_CONTROLLER);
 
@@ -120,6 +123,11 @@ float controler_motor_left_int = 0.0;
 /* Mixer variable */
 float linear_velocity_ref;
 float angular_velocity_ref;
+float linear_velocity_est;
+float angular_velocity_est;
+
+float yaw_est;
+unsigned long odom_prev_time;
 
 /* ROS Nodehanlde */
 ros::NodeHandle  nh;
@@ -132,11 +140,15 @@ float runningAverage(float prev_avg, const float val, const int n);
 void setMotorRateAndDirection(int pwm_ref, const float rate_ref,
                               const byte enMotor, const byte in1Motor, const byte in2Motor);
 
-/* Cmd_vel subscriber */
+/* Velocity command subscriber */
 // callback function prototype
 void commandVelocityCallback(const geometry_msgs::Twist& cmd_vel_msg);
 // message
 ros::Subscriber<geometry_msgs::Twist> cmd_vel_sub("/cmd_vel", commandVelocityCallback);
+
+/* Odometry publisher */
+nav_msgs::Odometry odom;
+ros::Publisher odom_publisher("odom", &odom);
 
 /* DEBUG */
 #include <geometry_msgs/Point.h>
