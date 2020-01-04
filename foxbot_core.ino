@@ -84,21 +84,26 @@ void loop() {
 	if(_frequency_rate.delay(millis())) {
 		digitalWrite(RT_PIN0, HIGH);
 
+		float dt;
+
 		// MOTOR RIGHT
 		// direction
 		motor_right_direction_median_filter.in(motor_right_direction);
 		motor_right_filtered_direction = motor_right_direction_median_filter.out();
 
 		// filter increment per second
-		motor_right_filtered_inc_per_second = runningAverage(motor_right_filtered_inc_per_second,
-				(float)motor_right_inc / (millis() - motor_right_prev_time) * 1000.0,
-				RATE_AVERAGE_FILTER_SIZE);
+		dt = (millis() - motor_right_prev_time);
 		motor_right_prev_time = millis();
+		motor_right_filtered_inc_per_second = runningAverage(motor_right_filtered_inc_per_second,
+				(float)motor_right_inc / dt * 1000.0f, RATE_AVERAGE_FILTER_SIZE);
 
 		// estimated rate
 		motor_right_rate_est = (float)motor_right_filtered_direction
 							 * motor_right_filtered_inc_per_second * RATE_CONV;
 		motor_right_inc = 0;
+
+		if (abs(motor_right_rate_est) < 0.1f)
+			motor_right_rate_est = 0.0f;
 
 		motor_right_check_dir = 1;
 		motor_right_direction = 0;
@@ -109,16 +114,19 @@ void loop() {
 		motor_left_filtered_direction = motor_left_direction_median_filter.out();
 
 		// filter increment per second
-		motor_left_filtered_inc_per_second = runningAverage(motor_left_filtered_inc_per_second,
-				(float)motor_left_inc / (millis() - motor_left_prev_time) * 1000.0,
-				RATE_AVERAGE_FILTER_SIZE);
+		dt = (millis() - motor_left_prev_time);
 		motor_left_prev_time = millis();
+		motor_left_filtered_inc_per_second = runningAverage(motor_left_filtered_inc_per_second,
+				(float)motor_left_inc / dt * 1000.0f, RATE_AVERAGE_FILTER_SIZE);
+
 
 		// estimated rate
 		motor_left_rate_est = (float)motor_left_filtered_direction
 							* motor_left_filtered_inc_per_second * RATE_CONV;
 		motor_left_inc = 0;
 
+		if (abs(motor_left_rate_est) < 0.1f)
+			motor_left_rate_est = 0.0f;
 		motor_left_check_dir = 1;
 		motor_left_direction = 0;
 
