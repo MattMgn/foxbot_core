@@ -185,7 +185,18 @@ void loop() {
 		dx = cos(yaw_est) * linear_velocity_est * dt;
 		dy = sin(yaw_est) * linear_velocity_est * dt;
 
-		// feed odom frame
+		// DEBUG
+		debug_left.y = yaw_est * 57.2958;
+		debug_left.z = angular_velocity_est * dt;
+		debug_publisher1.publish(&debug_left);
+
+		// compute quaternion
+		qw = cos(abs(yaw_est) / 2.0f);
+		qx = 0.0f;
+		qy = 0.0f;
+		qz = sign(yaw_est) * sin(abs(yaw_est) / 2.0f);
+
+		// feed odom message
 		odom.header.stamp = nh.now();
 		odom.header.frame_id = "odom";
 		odom.child_frame_id = "base_link";

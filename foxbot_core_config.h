@@ -159,5 +159,10 @@ ros::Publisher debug_publisher1("debug_left", &debug_left);
 geometry_msgs::Point debug_right;
 ros::Publisher debug_publisher2("debug_right", &debug_right);
 
+template <typename type>
+type sign(type value) {
+    return type((value>0)-(value<0));
+}
+
 
 #endif // FOXBOT_CORE_CONFIG_H_
