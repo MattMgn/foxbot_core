@@ -37,7 +37,7 @@
 
 /* Global parameters */
 #define FREQUENCY_RATE 						30 			// [ms] default 50ms
-#define FREQUENCY_ODOMETRY 				150 		// [ms] default 250ms
+#define FREQUENCY_ODOMETRY 				    150 		// [ms] default 250ms
 #define FREQUENCY_ROSPINONCE 				150 		// [ms]
 #define FREQUENCY_CONTROLLER 				30 			// [ms] default 50ms
 
@@ -57,9 +57,9 @@
 #define RATE_CONTROLLER_MAX_PWM 			500
 
 /* Mechanical parameters */
-#define WHEEL_RADIUS 						0.04 		// [m]
-// distance between Robot Rotation Point and Wheel Point of Contact
-#define BASE_LENGTH							0.3 		// [m]
+#define WHEEL_RADIUS 						0.0326 		// [m]
+// distance between the two wheels
+#define BASE_LENGTH 						0.272 		// [m]  0.288
 
 /* Define frequency loops */
 Timer _frequency_rate(FREQUENCY_RATE);

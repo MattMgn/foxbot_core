@@ -123,10 +123,10 @@ void loop() {
 		motor_left_direction = 0;
 
 		// MIXER
-		motor_right_rate_ref = (2.0 * linear_velocity_ref + BASE_LENGTH / 2.0 * angular_velocity_ref)
-							 / (2.0 * WHEEL_RADIUS);
-		motor_left_rate_ref  = (2.0 * linear_velocity_ref - BASE_LENGTH / 2.0 * angular_velocity_ref)
-							 / (2.0 * WHEEL_RADIUS);
+		motor_right_rate_ref = (linear_velocity_ref + BASE_LENGTH / 2.f * angular_velocity_ref)
+							 / (WHEEL_RADIUS);
+		motor_left_rate_ref  = (linear_velocity_ref - BASE_LENGTH / 2.f * angular_velocity_ref)
+							 / (WHEEL_RADIUS);
 
 		digitalWrite(RT_PIN0, LOW);
 	}
@@ -176,8 +176,8 @@ void loop() {
 		odom_prev_time = millis();
 
 		// compute linear and angular estimated velocity
-		linear_velocity_est = WHEEL_RADIUS * (motor_right_rate_est + motor_left_rate_est) / 2;
-		angular_velocity_est = (2 * WHEEL_RADIUS / BASE_LENGTH)
+		linear_velocity_est = WHEEL_RADIUS * (motor_right_rate_est + motor_left_rate_est) / 2.0f;
+		angular_velocity_est = (WHEEL_RADIUS / BASE_LENGTH)
 							 * (motor_right_rate_est - motor_left_rate_est);
 
 		// compute translation and rotation
