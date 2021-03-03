@@ -67,6 +67,7 @@ void setup()
 	_frequency_controller.start((unsigned long) millis());
 
 	nh.advertise(odom_publisher);
+	nh.advertise(joint_publisher);
 
 	// DEBUG
 	nh.advertise(debug_publisher1);
@@ -137,6 +138,12 @@ void loop() {
 							 / (WHEEL_RADIUS);
 
 		digitalWrite(RT_PIN0, LOW);
+		
+		// Fulfill the sensor_msg/JointState msg
+		robot_state.name_length = 2;
+		robot_state.velocity_length = 2;
+		robot_state.position_length = 2;
+		robot_state.effort_length = 2;
 	}
 
 	// rate controler
@@ -175,7 +182,7 @@ void loop() {
 		digitalWrite(RT_PIN1, LOW);
 	}
 
-	// update odometry
+	// update odometry and joints
 	if(_frequency_odometry.delay(millis())) {
 		float dt, dx, dy;
 		float qw, qx, qy, qz;
@@ -221,6 +228,26 @@ void loop() {
 		odom.twist.twist.angular.z = angular_velocity_est;
 
     	odom_publisher.publish(&odom);
+		
+		// Calculate joint_state message
+		motor_left_rate_est= motor_left_rate_est*(-1);
+		left_wheel_position = left_wheel_position + (motor_left_rate_est*(-1)) * WHEEL_RADIUS;
+		right_wheel_position = right_wheel_position + motor_right_rate_est * WHEEL_RADIUS;
+		pos[0] = right_wheel_position;
+		vel[0] = motor_right_rate_est;
+		pos[1] = left_wheel_position;
+		vel[1] = motor_left_rate_est;
+
+		//Feed joint_state message
+		robot_state.header.stamp = nh.now();
+		robot_state.header.frame_id = "";
+		robot_state.name = joint_name;
+		robot_state.position = pos;
+		//robot_state.position = ["debug_left.x", "debug_right.x"];
+		robot_state.velocity = vel;
+		robot_state.effort = eff;
+		
+		joint_publisher.publish(&robot_state);
 	}
 
 	// update subscribers values

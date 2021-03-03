@@ -129,6 +129,15 @@ float angular_velocity_est;
 float yaw_est;
 unsigned long odom_prev_time;
 
+/* Define JointState variables */
+char *joint_name[2] = {"wheel_right_joint", "wheel_left_joint"};
+float pos[2];
+float vel[2];
+float eff[2];
+
+float left_wheel_position = 0;
+float right_wheel_position = 0;
+
 /* ROS Nodehanlde */
 ros::NodeHandle  nh;
 
@@ -149,6 +158,11 @@ ros::Subscriber<geometry_msgs::Twist> cmd_vel_sub("/cmd_vel", commandVelocityCal
 /* Odometry publisher */
 nav_msgs::Odometry odom;
 ros::Publisher odom_publisher("odom", &odom);
+
+/* JointState publisher */
+#include <sensor_msgs/JointState.h>
+sensor_msgs::JointState robot_state;
+ros::Publisher joint_publisher("joint_states", &robot_state);
 
 /* DEBUG */
 #include <geometry_msgs/Point.h>
